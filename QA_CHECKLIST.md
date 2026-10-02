@@ -1,0 +1,29 @@
+# QA CHECKLIST — agadir-trip rebuild
+Independent QA pass 2026-10-02. Served as `python3 -m http.server 8041 --directory /tmp/sites`, browsed at `http://localhost:8041/agadir-trip/` (simulates GitHub Pages subpath exactly). Browser-verified desktop 1440px and mobile 390px, before and after fixes.
+
+## Findings → fixes
+
+| # | Finding | Severity | Resolution |
+|---|---------|----------|------------|
+| 1 | **Invented price unit "per buggy"**: buggy page stated "From $55 per buggy" in meta description, og:description, Product JSON-LD, FAQ JSON-LD, hero copy, "Who it's for", visible FAQ answer, price panel and inclusions list, and in buggy cards on home/excursions/quad pages. The legacy site published only "$55" with no unit (SOURCE_OF_TRUTH §2.5). | **Major (factual)** | **Fixed** — all 11 occurrences. Copy now says "from $55" and the FAQ honestly answers that the published rate doesn't state per-buggy vs per-seat, confirm on WhatsApp. "Two seats: driver + passenger" kept as a physical fact about the machine. |
+| 2 | **Invented price unit "per quad"** in quad price panel. Legacy published only "$40". | **Major (factual)** | **Fixed** — unit removed, panel shows "$40 from". |
+| 3 | **Invented claim "the trekking tour is quoted per group"** on trek page (visible FAQ + FAQ JSON-LD + price panel + inclusions aside), FAQ page (visible + JSON-LD), excursions footnote. Legacy published no price and no quoting policy (SOURCE_OF_TRUTH §2.6: price unknown, open question). | **Major (factual)** | **Fixed** everywhere — now "no published price — quoted on request / send date and group size for a quote". |
+| 4 | **Unpublished specifics on BBQ camel page**: "≈ 2 hours in the saddle" in inclusions and "Around two hours" in the itinerary. Legacy publishes only "approx. 3 hours" total. | Minor (factual) | **Fixed** — reworded to describe the route without inventing a ride duration. |
+| 5 | Homepage lede "Three ways onto the Souss river country" over a card row that includes the Quad Bike (which runs south to Tifnit, not the Souss river country). | Minor (factual/copy) | **Fixed** — "Sunset caravans, dune-running quads or the easy-going classic — pick your pace." |
+| 6 | Camel ride price shown "per person" though legacy card printed only "$20". | Info | **Won't fix (justified)** — one rider per camel makes per-person the only physically possible reading; price-note already flags 2021 "from" rates with final price confirmed at booking. |
+| 7 | Horse-page copy "not just a beach loop" while operator's own gallery photos show beach riding. | Info | **Won't fix (justified)** — photos are the operator's published horse-ride gallery; copy claims the route *includes* river/forest/palace (verified legacy itinerary), it doesn't deny beach sections. |
+| 8 | `/book/` sticky-CTA "Book now" links to `../book/` (self-link). | Cosmetic | **Won't fix** — harmless scroll-to-top on the same page; sticky bar is shared markup across all pages. |
+
+## Verification matrix (all passes re-run after fixes)
+
+- **Subpath serving**: full programmatic crawl from `/agadir-trip/` — 56 URLs (pages + CSS/JS/images + `?experience=` variants), **0 broken, 0 escaping the subpath**; all asset refs relative. `.nojekyll` present.
+- **Visual desktop 1440px**: home (hero, cards, type tiles, dark USP band, pickup split, CTA band, footer), buggy and trek tour layouts incl. price panels — consistent typography (Fraunces/Inter), authentic operator photography, no layout breaks.
+- **Visual mobile 390px**: hero crop legible, hamburger nav opens full-height menu with large tap targets, sticky WhatsApp/Book CTA bar with working dismiss, tour page facts bar/itinerary/galleries stack cleanly.
+- **Console**: zero page errors on home, book, buggy, trek (desktop + mobile).
+- **Booking form**: `?experience=` preselect works; submit composes correct `https://wa.me/212649638249?text=…` payload (experience, date, adults/children, pickup, name, notes); success state shows; mailto fallback mirrors the message to agadirtrip@gmail.com; empty-submit validation lists missing required fields.
+- **Contact targets**: every `tel:` is `+212649638249`, every WhatsApp link is `wa.me/212649638249` (no stale `wa.link/1tzty7`), email everywhere `agadirtrip@gmail.com`.
+- **Legacy parity**: all 6 excursions present at their exact legacy slugs with verified data — BBQ camel $40/child €20/≈3h sunset/BBQ+veg+photos; horse $30/child €20/≈2h/tea+snacks; camel $20/≈2h/tea+snacks; quad $40/≈2h+10-min orientation/helmet+goggles/Tifnit; buggy $55/≈2h+orientation/helmet+goggles; trek full-day/≈09:00/argan cooperative/rock pools, price on request. Currency exactly as legacy-published: adult $ / child € (the two published child prices only); no invented conversions, no MAD.
+- **REDIRECTS.md**: covers all 21 legacy URLs from LEGACY_CONTENT_INVENTORY.md (11 pages, 3 posts, 7 taxonomy/utility), with GitHub Pages limitation note.
+- **Must-NOT list**: grep for lorem/TODO/placeholder/FIXME/COVID/Adriatic/2559/1559/Italian/Denise Griffin/Jeff Douglas/Kelly Bezos/star-ratings/review counts/shutterstock — **clean**. No social links (legacy handles unverified). No third-party review claims anywhere.
+- **Assets**: `assets/img/` contents exactly match ASSET_INVENTORY.md's rebuild usage map; none of the flagged files shipped (Shutterstock, Flickr-sourced sunset, unknown-origin wallpaper, fake-testimonial photo, non-Moroccan trekking header, Cable Beach stock). Wikimedia images credited inline (trek/contact/home figures) + blanket footer credit.
+- **SEO**: `sitemap.xml` lists all 10 indexable pages under `https://sugarglider7.github.io/agadir-trip/`; every page's canonical/og:url matches its github.io URL; robots.txt points at the sitemap; 404.html uses absolute github.io asset/nav URLs (required for GH Pages arbitrary-depth 404s).
